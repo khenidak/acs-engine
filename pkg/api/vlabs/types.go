@@ -205,6 +205,7 @@ type KubernetesConfig struct {
 	GCHighThreshold                  int     `json:"gchighthreshold,omitempty"`
 	GCLowThreshold                   int     `json:"gclowthreshold,omitempty"`
 	EtcdVersion                      string  `json:"etcdVersion,omitempty"`
+	EnableExternalKms                bool    `json:"enableExternalKms,omitempty"`
 }
 
 // DcosConfig Configuration for DC/OS

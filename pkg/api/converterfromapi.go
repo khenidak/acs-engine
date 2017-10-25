@@ -670,6 +670,7 @@ func convertKubernetesConfigToVLabs(api *KubernetesConfig, vlabs *vlabs.Kubernet
 	vlabs.GCHighThreshold = api.GCHighThreshold
 	vlabs.GCLowThreshold = api.GCLowThreshold
 	vlabs.EtcdVersion = api.EtcdVersion
+	vlabs.EnableExternalKms = api.EnableExternalKms
 }
 
 func convertMasterProfileToV20160930(api *MasterProfile, v20160930 *v20160930.MasterProfile) {

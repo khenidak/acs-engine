@@ -42,6 +42,7 @@ spec:
         - "--requestheader-extra-headers-prefix=X-Remote-Extra-"
         - "--requestheader-group-headers=X-Remote-Group"
         - "--requestheader-username-headers=X-Remote-User"
+        <enableExternalKms>
       volumeMounts:
         - name: "etc-kubernetes"
           mountPath: "/etc/kubernetes"

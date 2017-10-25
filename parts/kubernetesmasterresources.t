@@ -365,6 +365,37 @@
       },
       "type": "Microsoft.Network/networkInterfaces"
     },
+{{if IsExternalKmsEnabled}}
+     {
+       "type": "Microsoft.KeyVault/vaults",
+       "name": "[variables('clusterKeyVaultName')]",
+       "apiVersion": "2015-06-01",
+       "location": "[variables('location')]",
+       "properties": {
+         "enabledForDeployment": "false",
+         "enabledForDiskEncryption": "false",
+         "enabledForTemplateDeployment": "false",
+         "tenantId": "[variables('tenantID')]",
+ {{if not UseManagedIdentity}}
+         "accessPolicies": [
+           {
+             "tenantId": "[variables('tenantID')]",
+             "objectId": "[variables('servicePrincipalClientId')]",
+             "permissions": {
+               "keys": ["create", "encrypt", "decrypt"]
+             }
+           }
+         ],
+ {{else}}
+         "accessPolicies": [],
+ {{end}}
+         "sku": {
+           "name": "[variables('clusterKeyVaultSku')]",
+           "family": "A"
+         }
+       }
+     },
+ {{end}}
     {
     {{if .MasterProfile.IsManagedDisks}}
       "apiVersion": "[variables('apiVersionStorageManagedDisks')]",

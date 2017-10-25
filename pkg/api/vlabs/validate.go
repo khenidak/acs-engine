@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/Azure/acs-engine/pkg/api/common"
+	"github.com/Masterminds/semver"
 	"github.com/satori/uuid"
 	validator "gopkg.in/go-playground/validator.v9"
 )
@@ -521,7 +522,24 @@ func (a *KubernetesConfig) Validate(k8sVersion string) error {
 	if e := isValidEtcdVersion(a.EtcdVersion); e != nil {
 		return e
 	}
+	// External Kms works only with etcd3.x
+	if a.EnableExternalKms {
+		// for the wave/first version of External KMS, we can not support KMS+MSI
+		// because there is no clean way you can assign VM principals to Kv
+		if a.UseManagedIdentity {
+			return fmt.Errorf("External KMS with MSI is not currently supported")
+		}
 
+		if "" == a.EtcdVersion {
+			// User didn't set Etcd version, let us set it for them
+			a.EtcdVersion = "3.1.10"
+		} else {
+			ver, _ := semver.NewVersion(a.EtcdVersion)
+			if 2 <= ver.Major() {
+				return fmt.Errorf("External kms requires OrchestratorProfile.KubernetesConfig.EtcdVersion to be 3+")
+			}
+		}
+	}
 	return nil
 }
 

@@ -301,6 +301,11 @@ write_files:
     sed -i "/requestheader-username-headers/d" "/etc/kubernetes/manifests/kube-apiserver.yaml"
 {{end}}
     sed -i "s|<etcdApiVersion>|{{ .OrchestratorProfile.GetAPIServerEtcdAPIVersion }}|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{if .OrchestratorProfile.KubernetesConfig.EnableExternalKms }}
+    sed -i "s|<enableExternalKms>|- \"--experimental-encryption-provider-config=/etc/kubernetes/encryptionConfig.yaml\"|g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{else}}
+    sed -i "s|<enableExternalKms>||g" "/etc/kubernetes/manifests/kube-apiserver.yaml"
+{{end}}
 
 - path: "/opt/azure/containers/provision.sh"
   permissions: "0744"
@@ -362,7 +367,32 @@ write_files:
     systemctl daemon-reload 
     systemctl enable etcd.service
 {{end}}
+{{if .OrchestratorProfile.KubernetesConfig.EnableExternalKms }}
+- path: "/etc/kubernetes/encryptionConfig.yaml"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    kind: EncryptionConfig
+    apiVersion: v1
+    resources:
+      - resources:
+        - secrets
+    providers:
+    - kms:
+        cachesize: 100
+        configfile: /etc/kubernetes/azureOverride.yaml
+        name: azure-keyvault
+    - identity: {}
 
+- path: "/etc/kubernetes/azureOverride.yaml"
+  permissions: "0644"
+  owner: "root"
+  content: |
+    vaultName: ""
+    keyName: ""
+    keyVersion: ""
+
+{{end}}
 runcmd: 
 {{ if .OrchestratorProfile.IsCustomEtcdVersion }}
 - /opt/azure/containers/setup-etcd.sh
